@@ -1,0 +1,1 @@
+wget -O macs.txt http://cmc:5053/inventory/getAllMacAddresses?hrn=node1-1.grid.orbit-lab.org&domain=grid.orbit-lab.org

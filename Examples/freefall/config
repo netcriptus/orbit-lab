@@ -1,0 +1,83 @@
+
+ControlSocket("TCP", 7777);
+ChatterSocket("TCP", 7778);
+
+// INPUT PATH
+FromDevice(ath0, OUTBOUND true)
+-> ibreak :: Switch(0)
+-> AthdescDecap() -> FilterPhyErr 
+-> Classifier(0/08%0c) -> WifiDupeFilter() -> WifiDecap(POSX 1, POSY 2) 
+-> Classifier(12/a5%ff)
+-> txf :: FilterTX()[0]
+-> Print(i0, TIMESTAMP 1, NBYTES 14) -> IN :: AverageCounter();
+
+txf[1] 
+-> TXF :: PrintTXFeedback(x0);
+
+// OUTPUT PATH
+psout :: PrioSched()
+-> SetTXPower(POWER 1)
+-> WifiEncap(0x0, 00:00:00:00:00:00, ETHTYPE 0xa502, ACKTYPE 0xa503, SPPTYPE 0xa501, POSX 1, POSY 2) -> AthdescEncap()
+//ExtraEncap added by kai
+//-> ExtraEncap() -> AthdescEncap()
+-> obreak :: PullSwitch(0)
+-> to_dev :: ToDevice(ath0);
+to_dev_ctl :: SockControl(to_dev);
+Script(TYPE ACTIVE,
+   write to_dev_ctl.sndbuf 1000,
+);
+
+OUT :: AverageCounter()
+-> Print(o0, TIMESTAMP 1, NBYTES 14) 
+-> [1] psout;
+
+// high priority output
+OUT_HP :: AverageCounter() 
+-> Print(p0, TIMESTAMP 1, NBYTES 14)
+-> [0] psout;
+
+RECV :: AverageCounter()
+-> Print(r0, TIMESTAMP 1, NBYTES 0)
+-> Discard;
+
+// this script isolates the I/O when the experiment is done
+kill :: Script(TYPE PASSIVE, 
+    wait 65, 
+    write ibreak.switch -1, 
+    write obreak.switch -1); 
+// this one brings everything back to normal
+reset :: Script(TYPE PASSIVE, 
+    write IN.reset, 
+    write OUT.reset,
+    write OUT_HP.reset,  
+    write RECV.reset, 
+    write ibreak.switch 0, 
+    write obreak.switch 0);
+// that one starts the protocol with initial delay
+run :: Script(TYPE PASSIVE,
+    wait 5,
+    write start.run);
+
+
+
+// SIGNAL PATH (for preencoding)
+to_dev[0] -> SIGpath :: AthdescDecap -> SIG :: WifiDecap(POSX 1, POSY 2);
+//ExtraDecap added by kai
+//to_dev[0] -> SIGpath :: AthdescDecap -> SIG :: ExtraDecap();
+// we have to route even the failures...
+to_dev[1] -> Print(fail, NBYTES 2) -> SIGpath;
+
+//    m :: MORE(ETH 00:60:B3:25:BF:F2, ETHTYPE 0xa502, ACKTYPE 0xa503, POSX 1, POSY 2 ) -> OUT;
+    m :: MORE(ETH 00:60:B3:25:BF:F2, ETHTYPE 0xa502, ACKTYPE 0xa503 ) -> OUT;
+    m[1] -> OUT_HP;
+    m[2] -> RECV;
+
+    IN -> [0]m;
+    TXF -> [1]m;
+    SIG -> [2]m;
+
+    start :: Script(TYPE PASSIVE,
+        write m.start,
+    );
+
+

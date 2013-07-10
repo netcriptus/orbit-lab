@@ -1,0 +1,193 @@
+#!/bin/bash
+
+: <<COMMENTBLOCK
+
+
+./orbitPutFile controlnode csclient.cc /root/click-1.6.0/apps/csclient
+sleep 1s
+./orbitPutFile controlnode madwifirate.cc /root/click-1.6.0/elements/wifi/
+sleep 1s
+./orbitPutFile controlnode autoratefallback.cc /root/click-1.6.0/elements/wifi/
+sleep 1s
+./orbitPutFile controlnode nodes.py /root/more/
+sleep 1s
+./orbitPutFile controlnode element.cc /root/click-1.6.0/lib/
+sleep 1s
+./orbitPutFile controlnode element.hh /root/click-1.6.0/include/click/
+sleep 1s
+./orbitPutFile controlnode router.hh /root/click-1.6.0/include/click/
+sleep 1s
+./orbitPutFile othernode router.hh /root/click-1.6.0/include/click/
+sleep 1s
+
+./orbitPutFile othernode csclient.cc /root/click-1.6.0/apps/csclient
+sleep 1s
+./orbitPutFile othernode madwifirate.cc /root/click-1.6.0/elements/wifi/
+sleep 1s
+./orbitPutFile othernode autoratefallback.cc /root/click-1.6.0/elements/wifi/
+sleep 1s
+./orbitPutFile othernode nodes.py /root/more/
+sleep 1s
+./orbitPutFile othernode element.cc /root/click-1.6.0/lib/
+sleep 1s
+./orbitPutFile othernode element.hh /root/click-1.6.0/include/click/
+sleep 1s
+./orbitPutFile controlnode writeAll.py /root/more/
+sleep 1s
+./orbitPutFile othernode writeAll.py /root/more/
+sleep 1s
+./orbitPutFile controlnode opp.py /root/more/
+sleep 1s
+./orbitPutFile othernode opp.py /root/more/
+sleep 1s
+./orbitPutFile othernode getInfo.py /root/more/
+sleep 1s
+./orbitPutFile controlnode getInfo.py /root/more/
+sleep 1s
+./orbitPutFile othernode exec.py /root/more/
+sleep 1s
+./orbitPutFile controlnode exec.py /root/more/
+sleep 1s
+./orbitPutFile othernode feed.py /root/more/
+sleep 1s
+./orbitPutFile controlnode feed.py /root/more/
+sleep 1s
+./orbitPutFile controlnode classifier.cc /root/click-1.6.0/elements/standard/
+sleep 1s
+./orbitPutFile othernode classifier.cc /root/click-1.6.0/elements/standard/
+sleep 1s
+./orbitPutFile controlnode athdescdecap.cc /root/click-1.6.0/elements/wifi/
+sleep 1s
+./orbitPutFile othernode athdescdecap.cc /root/click-1.6.0/elements/wifi/
+sleep 1s
+./orbitPutFile othernode quickrun.py /root/more/
+sleep 1s
+./orbitPutFile controlnode quickrun.py /root/more/
+sleep 1s
+./orbitPutFile othernode feed.py /root/more/
+sleep 1s
+./orbitPutFile controlnode feed.py /root/more/
+sleep 1s
+./orbitPutFile controlnode settxrate.cc /root/click-1.6.0/elements/wifi/
+sleep 1s
+./orbitPutFile othernode settxrate.cc /root/click-1.6.0/elements/wifi/
+sleep 1s
+./orbitPutFile controlnode probetxrate.cc /root/click-1.6.0/elements/wifi/
+sleep 1s
+./orbitPutFile othernode probetxrate.cc /root/click-1.6.0/elements/wifi/
+sleep 1s
+./orbitPutFile controlnode fullnotequeue.cc /root/click-1.6.0/elements/standard/
+sleep 1s
+./orbitPutFile othernode fullnotequeue.cc /root/click-1.6.0/elements/standard/
+sleep 1s
+./orbitPutFile othernode links.py /root/more/
+sleep 1s
+./orbitPutFile controlnode links.py /root/more/
+sleep 1s
+./orbitPutFile othernode nodes.py /root/more/
+sleep 1s
+./orbitPutFile controlnode nodes.py /root/more/
+sleep 1s
+./orbitPutFile controlnode router.cc /root/click-1.6.0/lib/
+sleep 1s
+./orbitPutFile othernode router.cc /root/click-1.6.0/lib/
+sleep 1s
+./orbitPutFile othernode confparse.cc /root/click-1.6.0/lib/
+sleep 1s
+./orbitPutFile controlnode confparse.cc /root/click-1.6.0/lib/
+sleep 1s
+./orbitPutFile controlnode extradecap.cc /root/click-1.6.0/elements/wifi/
+sleep 1s
+./orbitPutFile othernode extradecap.cc /root/click-1.6.0/elements/wifi/
+sleep 1s
+./orbitPutFile othernode controlsocket.cc /root/click-1.6.0/elements/userlevel/
+sleep 1s
+./orbitPutFile controlnode controlsocket.cc /root/click-1.6.0/elements/userlevel/
+sleep 1s
+./orbitPutFile controlnode athdescencap.hh /root/click-1.6.0/elements/wifi/
+sleep 1s
+./orbitPutFile othernode athdescencap.hh /root/click-1.6.0/elements/wifi/
+sleep 1s
+
+
+
+
+
+./orbitPutFile controlnode  wifi.h /root/click-1.6.0/include/clicknet/
+sleep 1s
+./orbitPutFile othernode wifi.h /root/click-1.6.0/include/clicknet/
+sleep 1s
+
+
+
+
+
+
+
+
+./orbitPutFile othernode config.py /root/more/
+sleep 1s
+./orbitPutFile controlnode config.py /root/more/
+sleep 1s
+
+
+./orbitPutFile controlnode athdescdecap.hh /root/click-1.6.0/elements/wifi/
+sleep 1s
+./orbitPutFile othernode athdescdecap.hh /root/click-1.6.0/elements/wifi/
+sleep 1s
+./orbitPutFile controlnode athdescencap.cc /root/click-1.6.0/elements/wifi/
+sleep 1s
+./orbitPutFile othernode athdescencap.cc /root/click-1.6.0/elements/wifi/
+sleep 1s
+
+
+
+
+
+./orbitPutFile controlnode wifiencap.cc /root/click-1.6.0/elements/wifi
+sleep 1s
+./orbitPutFile othernode wifiencap.cc /root/click-1.6.0/elements/wifi
+sleep 1s
+
+
+
+./orbitPutFile controlnode links.py /root/more/
+sleep 1s
+./orbitPutFile othernode links.py /root/more/
+sleep 1s
+
+
+./orbitPutFile nodeset selectnodes.py /root/more/
+sleep 1s
+
+
+./orbitPutFile othernode links.py /root/more/
+sleep 1s
+
+
+
+./orbitPutFile nodeset athdescdecap.cc /root/click-1.6.0/elements/wifi/
+sleep 1s
+./orbitPutFile nodeset   athdescdecap.cc /root/click-1.6.0/elements/wifi/
+sleep 1s
+
+./orbitPutFile controlnode wifidecap.cc /root/click-1.6.0/elements/wifi
+sleep 1s
+./orbitPutFile othernode wifidecap.cc /root/click-1.6.0/elements/wifi
+sleep 1s
+
+COMMENTBLOCK
+
+./orbitPutFile controlnode links.py /root/more/
+sleep 1s
+
+./orbitPutFile othernode links.py /root/more/
+sleep 1s
+
+./orbitPutFile controlnode selectnodes.py /root/more/
+sleep 1s
+
+./orbitPutFile othernode selectnodes.py /root/more/
+sleep 1s
+
+

@@ -1,0 +1,47 @@
+#!/usr/bin/ruby
+# Author: Chris Davies (chris@orderonenetworks.com)
+
+require 'orbit_Support'
+
+# do we execute simulataneously?
+executeSequentially = 0
+
+# our current offset when parsing command line
+parseOffset = 0
+
+if (ARGV[parseOffset]["--sequential"]) then
+    executeSequentially = 1
+    parseOffset += 1
+end
+
+# build our list of nodes to affect
+ons = OrbitNodeSets.new(ARGV[parseOffset])
+
+# the command line to send them
+userCommandLine = ARGV[parseOffset+1]
+if (userCommandLine == nil) then
+    puts "ERROR: no command line present"
+    exit(0)
+end
+
+userCommandLine = OrbitFixCommandParse(userCommandLine,"`")
+
+# make the outside single quotes into doubles
+if (userCommandLine["'"]) then
+    userCommandLine[userCommandLine.index("\'")] = "\""
+    userCommandLine[userCommandLine.rindex("\'")] = "\""
+end
+
+#puts "orbitCmd: " + userCommandLine
+# now we run the command
+ons.nodeList.each { |node|
+
+    cmdLineMod = userCommandLine.to_s
+    cmdLineMod = cmdLineMod.gsub('%x',node['x'].to_s)
+    cmdLineMod = cmdLineMod.gsub('%y',node['y'].to_s)
+    if executeSequentially == 1 then
+        system(cmdLineMod)
+    else
+        fork do exec(cmdLineMod) end
+    end
+}

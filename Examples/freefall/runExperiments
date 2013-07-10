@@ -1,0 +1,100 @@
+#!/bin/bash
+
+: <<COMMENTBLOCK
+
+
+#wget http://instrument1.orbit-lab.org:5012/interference/stop
+
+echo Shutting down all nodes ...
+omf tell offs all
+
+sleep 180s
+
+echo Loading all nodes with fwu12.ndz ...
+omf load all fwu12.ndz 1600
+
+sleep 180s
+
+echo Turning active nodes on ...
+omf tell on all			#system:topo:active:$1
+
+sleep 300s
+COMMENTBLOCK
+
+if [ $1 = grid ]
+then
+	for n in 25
+	do
+		declare -i repeats=1
+		while [[ $repeats>0 ]]
+		do
+			./selectnodes.py -h grid -n $n
+
+			#sleep 1s
+
+			# Configure wireless interfaces
+			./orbitRunWait nodeset "iwconfig ath0 essid 'opptest'"
+			#sleep 1s
+			./orbitRunWait nodeset "iwconfig ath0 channel 1"
+			sleep 1s
+
+			# Put nodes on control node
+			./orbitPutFile controlnode more.stats /root/
+			./orbitPutFile controlnode nodes /root/more/
+			./orbitPutFile controlnode linksopp /root/more/
+			./orbitPutFile controlnode quickrun.py /root/more/
+			sleep 3s
+
+			# Meaure link loss probabilities
+			##./orbitRunWait controlnode "/root/more/links.py -r 2 -o /root/more/linksopp"
+			##sleep 1s
+
+			# Meaure MORE's throughput
+			./orbitRunWait controlnode "/root/more/quickrun.py -t 25 /root/more/linksopp src dst more"
+
+			# Collect results
+			./orbitGetFileMerged controlnode more.stats more-$n-$repeats.stats
+
+			# Remove stat file
+			./orbitRunWait controlnode "rm /root/more.stats"
+			
+			repeats+=-1
+		done
+	done
+else
+	if [ $1 = sb2 ]
+	then
+		declare -i repeats=1
+		while [[ $repeats > 0 ]]
+		do
+			#./selectnodes.py -h sb2 -n 2
+
+			#sleep 1s
+			
+			./orbitRunWait nodeset "iwconfig ath0 channel 1"
+			sleep 1s
+
+			# Put nodes on control node
+			./orbitPutFile controlnode nodes /root/more/
+			sleep 2s
+
+			#./orbitRunWait controlnode "/root/more/exec.py /root/more/nodes 'iwconfig ath0 channel 1'"
+			#sleep 1s
+
+			# Meaure link loss probabilities
+			#./orbitRunWait controlnode "/root/more/links.py -r 11 -o /root/more/linksopp"
+			#sleep 1s
+
+			# Meaure MORE's throughput
+			./orbitRunWait controlnode "/root/more/quickrun.py /root/more/linksopp src dst more"
+
+			# Collect results
+			./orbitGetFileMerged controlnode more.stats more-1-$repeats.stats
+
+			repeats+=-1
+		done
+	else
+		echo [Error]: Wrong domain!
+	fi
+fi
+

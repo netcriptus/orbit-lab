@@ -1,0 +1,45 @@
+#!/bin/bash
+
+: <<COMMENTBLOCK
+
+
+./orbitPutFile controlnode wifiencap.hh /root/click-1.6.0/elements/wifi
+sleep 1s
+./orbitPutFile controlnode wifidecap.hh /root/click-1.6.0/elements/wifi
+sleep 1s
+./orbitPutFile controlnode  wifi.h /root/click-1.6.0/include/clicknet/
+sleep 1s
+./orbitPutFile othernode wifi.h /root/click-1.6.0/include/clicknet/
+sleep 1s
+./orbitPutFile othernode wifidecap.hh /root/click-1.6.0/elements/wifi
+sleep 1s
+./orbitPutFile othernode wifiencap.hh /root/click-1.6.0/elements/wifi
+sleep 1s
+./orbitPutFile controlnode wifiencap.cc /root/click-1.6.0/elements/wifi
+sleep 1s
+./orbitPutFile othernode wifiencap.cc /root/click-1.6.0/elements/wifi
+sleep 1s
+./orbitPutFile controlnode wifidecap.cc /root/click-1.6.0/elements/wifi
+sleep 1s
+./orbitPutFile othernode wifidecap.cc /root/click-1.6.0/elements/wifi
+sleep 1s
+./orbitPutFile controlnode quickrun.py /root/more
+sleep 1s
+./orbitPutFile othernode quickrun.py /root/more
+sleep 1s
+./orbitPutFile controlnode feed.py /root/more
+sleep 1s
+./orbitPutFile othernode feed.py /root/more
+sleep 1s
+./orbitPutFile controlnode linksopp /root/more
+sleep 1s
+./orbitPutFile othernode linksopp /root/more
+sleep 1s
+
+COMMENTBLOCK
+
+./orbitPutFile controlnode eotx.py /root/more
+sleep 1s
+./orbitPutFile controlnode wifi.py /root/more
+sleep 1s
+

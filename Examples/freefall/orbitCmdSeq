@@ -1,0 +1,5 @@
+#!/usr/bin/ruby
+# Author: Chris Davies (chris@orderonenetworks.com)
+require 'orbit_Support'
+userCommand = OrbitFixCommandParse(ARGV[1],"`")
+system("./orbitCmd --sequential #{ARGV[0]} \"#{userCommand}\"")

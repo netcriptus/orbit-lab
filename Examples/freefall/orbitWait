@@ -1,0 +1,56 @@
+#!/usr/bin/ruby
+# Author: Chris Davies (chris@orderonenetworks.com)
+require 'orbit_Support'
+
+# what command are we waiting on
+nodelist = ARGV[0]
+waitCmd = ARGV[1]
+
+# ensure out params are right
+if (waitCmd == nil) then
+    puts "ERROR: missing process text to wait for"
+    exit(0)
+end
+
+# do some special replaces
+waitCmd = OrbitFixCommandParse(waitCmd,"`")
+
+# build our list of nodes to affect
+ons = nil
+if nodelist != "" then
+    ons = OrbitNodeSets.new(nodelist)
+end
+
+# loop until we're done waiting 
+waitCount = 1
+while waitCount > 0
+
+    # reset count
+    waitCount = 0
+
+    if ons != nil then
+        # loop through the nodes so we can wait
+        ons.nodeList.each {|node|
+
+            cmdLineMod = waitCmd.to_s
+            cmdLineMod = cmdLineMod.gsub('%x',node['x'].to_s)
+            cmdLineMod = cmdLineMod.gsub('%y',node['y'].to_s)
+
+            # execute the check command 
+            command = "ps ax | grep \"" + cmdLineMod + "\" | egrep -v grep | egrep -v orbitWait | egrep -v orbitRunWait"
+           
+            if (IO.popen(command,"r").readlines[0] != nil) then
+                waitCount += 1
+            end       
+        }
+    else
+        # execute the check command
+        command = "ps ax | grep \"" + waitCmd + "\" | egrep -v grep | egrep -v orbitWait | egrep -v orbitRunWait"
+
+        if (IO.popen(command,"r").readlines[0] != nil) then
+            waitCount += 1
+        end
+    end
+
+    sleep(0.5) if (waitCount > 0)
+end

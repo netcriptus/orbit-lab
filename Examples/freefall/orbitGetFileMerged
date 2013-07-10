@@ -1,0 +1,10 @@
+#!/bin/bash
+# Author: Chris Davies (chris@orderonenetworks.com)
+./orbitRunWait $1 "cp $2 $2.TEMP%x-%y" > /dev/null
+./orbitCmd $1 "sftp root@node%x-%y:$2.TEMP%x-%y" 2> /dev/null > /dev/null
+./orbitWait '' "sftp"
+./orbitRunWait $1 "rm $2.TEMP%x-%y" 2> /dev/null
+rm $3 2> /dev/null
+./orbitCmd --sequential $1 "cat $2.TEMP%x-%y >> $3"
+./orbitCmd --sequential $1 "rm $2.TEMP%x-%y" > /dev/null
+

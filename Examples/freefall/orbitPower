@@ -1,0 +1,104 @@
+#!/usr/bin/ruby
+# Author: Chris Davies (chris@orderonenetworks.com)
+
+require 'orbit_Support'
+
+# constants
+DISPLAY_NTH_ITER = 2
+CMC_HEADER = "wget -O - -q 'http://cmc:5012/cmc/"
+PXE_HEADER = "wget -O - -q 'http://pxe:5012/pxe/"
+
+# command line parameters
+nodeListFile = ARGV[0]
+
+# do we want to turn the nodes on or off
+action = ARGV[1]
+
+if (!(action['on'] ||  action['off'])) then
+    puts "ERROR: useage: orbitPower nodelist on/off"
+    exit (0)
+end
+
+# get the list of nodes and start listener
+ons = OrbitNodeSets.new(nodeListFile)
+osr = OrbitMulticastStateReader.new
+
+# a utility to track missing nodes
+omn = OrbitMissingNodes.new
+
+# control how often we print
+iterCnt = 0
+
+loop {
+
+    sleep(10)
+    nodesInGoodState = ons.nodeList.length
+    iterTmp = 0
+    omn.clearList
+
+    ons.nodeList.each { |node|
+               
+        x = node['x']
+        y = node['y']
+        lastState = osr.getState(x,y)
+
+        if (lastState != nil && action == 'off') then
+            osr.setState(x,y,nil)
+            fork do 
+                exec(CMC_HEADER + "off?x=#{x}&y=#{y}'") 
+            end
+            nodesInGoodState -= 1
+            missed = 1
+        end
+
+        # we need to get rid of PXE boots
+        if (lastState != nil && action == 'on' && lastState['type']['pxe']) then
+            fork do
+                2.times {system(PXE_HEADER + "clearBootImage?node=node#{x}-#{y}' > /dev/null")}
+                2.times {system(CMC_HEADER + "reset?x=#{x}&y=#{y}'")}
+            end
+            nodesInGoodState -= 1
+            missed = 1
+        end
+
+        if (lastState == nil && action == 'on') then
+            if (iterCnt % 18 == 0 && iterCnt != 0) then
+
+                # we only want to print this message once
+                if (iterTmp != iterCnt) then
+                    puts "Performing a reset on missing nodes."
+                    iterTmp = iterCnt
+                end
+                fork do
+                    # we do it twice to ensure a reset
+                    2.times {system(CMC_HEADER + "reset?x=#{x}&y=#{y}'")}
+                end
+            else
+                fork do exec(CMC_HEADER + "on?x=#{x}&y=#{y}'") end
+            end
+            nodesInGoodState -= 1
+            missed = 1
+        end
+
+        omn.addNode(x,y) if (missed == 1)
+    }
+
+    if ((iterCnt % DISPLAY_NTH_ITER) == 0 || nodesInGoodState == ons.nodeList.length) then
+
+        output = "#{nodesInGoodState} of #{ons.nodeList.length} "
+        if (action == 'on') then
+            output = output + "have booted." + omn.getList("  Missing nodes:")
+        end
+
+        if (action == 'off') then 
+            output = output + "have shutdown." + omn.getList("  Remaining nodes:")
+        end
+  
+        puts output
+    end
+    iterCnt += 1
+
+    if (nodesInGoodState == ons.nodeList.length)
+        exit(0)
+    end
+}

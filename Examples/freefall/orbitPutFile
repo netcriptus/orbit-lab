@@ -1,0 +1,4 @@
+#!/bin/bash
+# Author: Chris Davies (chris@orderonenetworks.com)
+./orbitCmd $1 "scp $2 root@node%x-%y:$3 > /dev/null"
+./orbitWait '' scp

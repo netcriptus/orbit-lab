@@ -1,0 +1,11 @@
+chmod a+x /home/wayngong/oribtCmd
+chmod a+x /home/wayngong/orbitCmdSeq
+chmod a+x /home/wayngong/orbitGetFileMerged
+chmod a+x /home/wayngong/orbitImage
+chmod a+x /home/wayngong/orbitKillAll
+chmod a+x /home/wayngong/orbitKillOne
+chmod a+x /home/wayngong/orbitPower
+chmod a+x /home/wayngong/orbitPutFile
+chmod a+x /home/wayngong/orbitRun
+chmod a+x /home/wayngong/orbitRunWait
+chmod a+x /home/wayngong/orbitWait

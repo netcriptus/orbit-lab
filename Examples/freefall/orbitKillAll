@@ -1,0 +1,7 @@
+#!/usr/bin/ruby
+# Author: Chris Davies (chris@orderonenetworks.com)
+require 'orbit_Support'
+cmd = "kill -9  `ps ax | grep '#{ARGV[1]}' | egrep -v grep | cut -c -5`"
+cmd = OrbitFixCommandParse(cmd,"`")
+cmd = "./orbitRunWait #{ARGV[0]} \"" + cmd + "\" 2> /dev/null"
+system(cmd)

@@ -1,0 +1,6 @@
+#!/usr/bin/ruby
+# Author: Chris Davies (chris@orderonenetworks.com)
+require 'orbit_Support'
+userCommand = OrbitFixCommandParse(ARGV[1],"`")
+cmd = "./orbitCmd #{ARGV[0]} \"ssh root@node%x-%y '#{userCommand}'\""
+system(cmd)

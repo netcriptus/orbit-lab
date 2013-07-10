@@ -1,0 +1,267 @@
+#!/usr/bin/ruby
+# Author: Chris Davies (chris@orderonenetworks.com)
+
+require 'orbit_Support'
+
+# constants
+PXE_HEADER = "wget -O - -q 'http://pxe:5012/pxe/"
+CMC_HEADER = "wget -O - -q 'http://cmc:5012/cmc/"
+FRISBEE_HEADER = "wget -O - -q 'http://frisbee:5012/frisbee/"
+
+def turnOnNode(x,y)
+    fork do
+        system(CMC_HEADER + "on?x=#{x}&y=#{y}'")
+    end
+end
+
+def resetToPXE(x,y)
+    fork do
+        2.times {system(PXE_HEADER + "setBootImage?img=orbit-1.1.4&node=node#{x}-#{y}' > /dev/null")}
+        system(CMC_HEADER + "reset?x=#{x}&y=#{y}'")
+        system(CMC_HEADER + "on?x=#{x}&y=#{y}'")
+    end
+end
+
+
+# command line parameters
+nodeListFile = ARGV[0]
+imageName    = ARGV[1]
+
+if (imageName == nil)
+    puts "ERROR: missing parameters"
+    exit(0)
+end
+
+# get the list of nodes we're going to image
+ons = OrbitNodeSets.new(nodeListFile)
+
+# a utility to track missing nodes
+omn = OrbitMissingNodes.new
+
+# we're going to set the boot image for all nodes and then make a reset
+puts "Setting all nodes to image mode."
+ons.nodeList.each { |node|
+    resetToPXE(node['x'],node['y'])
+}        
+system("./orbitWait ''  \"" + CMC_HEADER + "\"")
+
+# create our multicast send port and our listener
+oms = OrbitMulticast.new("send")
+omr = OrbitMulticastStateReader.new
+
+# state and freqency stuff
+globalState = 0 
+nodesWrongState = -1
+iterCount = 0
+oldImageAvg = -100
+oldImageMin = -100
+doneOnce = 0
+
+# frisbee server stuff
+frisbeeServer = ""
+frisbeePort = ""
+
+loop {
+   
+    sleep(0.5)
+    omn.clearList
+    doneOnce = 0
+
+    # *************************************************************
+    if (globalState == 0) then
+
+        tmpNodesWrongState = 0
+
+        if (iterCount % 20 == 0) then
+            oms.send("0 NOBODY HELLO ")
+        end
+
+        # if any node is giving the wrong info, fix it and reboot it
+        ons.nodeList.each { |node|
+
+            x = node['x']
+            y = node['y']           
+            nodeState = omr.getState(x,y)
+
+            if nodeState != nil then
+                if (!nodeState['type']['pxe']) then
+                    if (iterCount % 40 == 0 && iterCount != 0) then
+                        resetToPXE(x,y)
+                        omr.setState(x,y,nil)
+                    end
+                    tmpNodesWrongState += 1
+                    omn.addNode(x,y)
+                end
+            else 
+                tmpNodesWrongState += 1
+                omn.addNode(x,y)
+                if ((iterCount % (360*2)) == 0 && iterCount != 0) then
+                    resetToPXE(x,y);
+                    if (doneOnce == 0) then
+                        doneOnce = 1
+                        puts "Performing a reset on missing nodes."
+                    end
+                end
+                if (iterCount % 40 == 0) then
+                    turnOnNode(x,y)
+                end
+            end
+        }
+
+        if (nodesWrongState == 0 || (iterCount != 0 && iterCount % 80 == 0)) then
+            nodesWrongState = tmpNodesWrongState
+            output =  "#{ons.nodeList.length - nodesWrongState} of #{ons.nodeList.length} nodes in image mode."
+            output = output + omn.getList('  Missing nodes:')
+            puts output
+        end
+
+        if (nodesWrongState == 0)
+            globalState = 1
+            nodesWrongState = ons.nodeList.length
+            iterCount = 0
+            puts "Assigning node aliases."
+        end
+    end
+
+    # *************************************************************
+    if (globalState == 1) then
+
+        tmpNodesWrongState = 0
+
+        # keep alive heartbeat
+        if (iterCount % 20 == 0) then
+            oms.send("0 NOBODY HELLO ")
+        end
+
+        # assign aliases and wait for heartbeat message
+        if (iterCount % 40 == 0) then
+            ons.nodeList.each { |node|
+
+                nodeState = omr.getState(node['x'],node['y'])
+                if (!nodeState['type']['firsthb']) then
+                
+                    x = node['x']
+                    y = node['y']               
+                
+                    if (iterCount % 20 == 0) then
+                        oms.send("0 /ip/" + omr.getIP(x,y) + " ALIAS /r_#{x}/c_#{y} /image/n_#{x}_#{y}")
+                    end
+                    omn.addNode(x,y)
+                    tmpNodesWrongState += 1
+                end
+            }   
+        end
+
+        if (nodesWrongState == 0 || (iterCount % 80 == 0 && iterCount != 0)) then
+            nodesWrongState = tmpNodesWrongState
+            output = "#{ons.nodeList.length - nodesWrongState} of #{ons.nodeList.length} nodes have been assigned an alias."
+            output = output + omn.getList('  Not aliased:')
+            puts output
+        end
+
+        if (nodesWrongState == 0)
+            globalState = 2
+            nodesWrongState = -1
+            iterCount = 0
+        end
+    end
+
+    # *************************************************************
+    if (globalState == 2) then
+
+        result = IO.popen(FRISBEE_HEADER + "getAddress?img=" + imageName +"'","r").readlines[0]
+        
+        if (result == nil) then
+            puts "ERROR: invalid image name"
+            exit(0)
+        end
+        
+        frisbeeServer = result.split(':')[0]
+        frisbeePort   = result.split(':')[1]
+
+        globalState = 3
+        puts "Received configuration information from the image server."
+
+    end
+
+    # *************************************************************
+    if (globalState == 3) then
+        
+        # every few seconds we tell the nodes to image
+        if (iterCount % 10 == 0) then
+            oms.send("-1 /*/* LOAD_IMAGE " + frisbeeServer + " " + frisbeePort + " /dev/hda")
+        end       
+
+        imageMin = 100
+        imageMax = 0
+        imageAvg = 0    
+
+        nodesAtZero = 0
+        nodesAtZeroList = ""
+
+        # and now we'll calculate our percent done 
+        # if any node is giving the wrong info, fix it and reboot it
+        ons.nodeList.each { |node|
+
+            nodeState = omr.getState(node['x'],node['y'])
+            if (nodeState['type']['imaging']) then
+                percentDone = nodeState['param']
+                if (percentDone == 0) then
+                    omn.addNode(node['x'],node['y'])
+                end
+                imageMin = percentDone if (imageMin > percentDone)
+                imageMax = percentDone if (imageMax < percentDone)
+                imageAvg += percentDone
+            else
+                omn.addNode(node['x'],node['y'])
+            end
+        }
+        imageMin = imageMax if (imageMin > imageMax)
+        imageAvg = imageAvg / ons.nodeList.length
+
+        if (imageAvg == 100 || (imageMin-oldImageMin).abs > 9  || (imageAvg -oldImageAvg).abs > 9 || iterCount == 0 ) then
+            oldImageAvg = imageAvg
+            oldImageMin = imageMin
+            output = "Percent imaged: (min/max/avg) #{imageMin}/#{imageMax}/#{imageAvg}"
+            if (imageMin != 0 || imageAvg != 0 || imageMax != 0) then           
+                output = output + omn.getList("  Not Imaging:")
+            end
+            puts output
+        end
+
+        if (imageAvg == 100) then
+            puts "Imaging completed."
+            globalState = 4
+        end
+    end
+
+    # *************************************************************
+    if (globalState == 4) then
+
+        puts "Returning nodes to normal function."
+        
+        # now we'll clear the image type and reset the nodes
+        ons.nodeList.each { |node|
+
+            x = node['x']
+            y = node['y']
+
+            fork do
+                2.times {system(PXE_HEADER + "clearBootImage?node=node#{x}-#{y}' > /dev/null")}
+                2.times {system(CMC_HEADER + "reset?x=#{x}&y=#{y}'")}
+            end
+        }
+
+        # and we'll wait for completion of all of this
+        system("./orbitWait '' \"" + PXE_HEADER + "\"")
+        system("./orbitWait '' \"" + CMC_HEADER + "\"")
+
+        globalState = 5
+        puts "Done."
+        exit(0)
+
+    end
+
+    iterCount += 1
+}
+
