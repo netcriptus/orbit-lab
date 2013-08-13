@@ -1,7 +1,7 @@
 #
 # Tutorial experiment
 #
-defProperty('duration', 60, "Duration of the experiment")
+defProperty('duration', 30, "Duration of the experiment")
 
 baseTopo = Topology['system:topo:imaged']
 
@@ -43,7 +43,9 @@ end
 onEvent(:ALL_UP_AND_INSTALLED) do |event|
   info "This is my first OMF experiment"
   wait 15
-  allGroups.startApplications
+  nodes('receiver').startApplications
+  wait 10
+  nodes('sender').startApplications
   info "All my Applications are started now..."
   wait property.duration
   allGroups.stopApplications
