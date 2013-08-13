@@ -13,6 +13,19 @@ rt = defTopology("receiver") do |t|
   t.addNode(baseTopo.getNodeByIndex(1))
 end
  
+defGroup('Receiver', "receiver") do |node|
+  node.addApplication("server.py") do |app|
+    app.setProperty('udp:local_host', '192.168.0.3')
+    app.setProperty('udp:local_port', 5000)
+    app.measure('udp_in', :samples => 1)
+  end
+  node.net.w1.mode = "adhoc"
+  node.net.w1.type = 'g'
+  node.net.w1.channel = "6"
+  node.net.w1.essid = "helloworld"
+  node.net.w1.ip = "192.168.0.3"
+end
+
 defGroup('Sender', "sender") do |node|
   node.addApplication("client.py") do |app|
     app.setProperty('udp:local_host', '192.168.0.2')
@@ -25,19 +38,6 @@ defGroup('Sender', "sender") do |node|
   node.net.w1.channel = "6"
   node.net.w1.essid = "helloworld"
   node.net.w1.ip = "192.168.0.2"
-end
-
-defGroup('Receiver', "receiver") do |node|
-  node.addApplication("server.py") do |app|
-    app.setProperty('udp:local_host', '192.168.0.3')
-    app.setProperty('udp:local_port', 5000)
-    app.measure('udp_in', :samples => 1)
-  end
-  node.net.w1.mode = "adhoc"
-  node.net.w1.type = 'g'
-  node.net.w1.channel = "6"
-  node.net.w1.essid = "helloworld"
-  node.net.w1.ip = "192.168.0.3"
 end
 
 onEvent(:ALL_UP_AND_INSTALLED) do |event|
