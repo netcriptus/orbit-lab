@@ -14,7 +14,7 @@ rt = defTopology("receiver") do |t|
 end
  
 defGroup('Sender', "sender") do |node|
-  node.addApplication("client") do |app|
+  node.addApplication("client.py") do |app|
     app.setProperty('udp:local_host', '192.168.0.2')
     app.setProperty('udp:dst_host', '192.168.0.3')
     app.setProperty('udp:dst_port', 5000)
@@ -28,7 +28,7 @@ defGroup('Sender', "sender") do |node|
 end
 
 defGroup('Receiver', "receiver") do |node|
-  node.addApplication("server") do |app|
+  node.addApplication("server.py") do |app|
     app.setProperty('udp:local_host', '192.168.0.3')
     app.setProperty('udp:local_port', 5000)
     app.measure('udp_in', :samples => 1)
