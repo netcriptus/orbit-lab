@@ -1,5 +1,5 @@
 #
-# Tutorial experiment
+# First experiment
 #
 defProperty('duration', 30, "Duration of the experiment")
 
