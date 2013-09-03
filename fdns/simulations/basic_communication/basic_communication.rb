@@ -45,9 +45,7 @@ end
 onEvent(:ALL_UP_AND_INSTALLED) do |event|
   info "This is my first OMF experiment"
   wait 15
-  nodes('receiver').startApplications
-  wait 10
-  nodes('sender').startApplications
+  allGroups.startApplications
   info "All my Applications are started now..."
   wait property.duration
   allGroups.stopApplications
