@@ -1,6 +1,8 @@
 #
 # First experiment
 #
+
+
 defProperty('duration', 30, "Duration of the experiment")
 
 baseTopo = Topology['system:topo:imaged']
@@ -14,7 +16,7 @@ rt = defTopology("receiver") do |t|
 end
  
 defGroup('Receiver', "receiver") do |node|
-  node.addApplication("server.py") do |app|
+  node.addApplication("server") do |app|
     app.setProperty('udp:local_host', '192.168.0.3')
     app.setProperty('udp:local_port', 5000)
     app.measure('udp_in', :samples => 1)
@@ -27,7 +29,7 @@ defGroup('Receiver', "receiver") do |node|
 end
 
 defGroup('Sender', "sender") do |node|
-  node.addApplication("client.py") do |app|
+  node.addApplication("client") do |app|
     app.setProperty('udp:local_host', '192.168.0.2')
     app.setProperty('udp:dst_host', '192.168.0.3')
     app.setProperty('udp:dst_port', 5000)

@@ -2,7 +2,7 @@ from SocketServer import ThreadingUDPServer, BaseRequestHandler
 
 class Stream(BaseRequestHandler):
     def __init__(self, *args, **kwargs):
-        self.log = open("simulation_log.txt", "a+")
+        self.log = open("/home/fernandocezar/Orbit/fdns/simulations/basic_communication/simulation_log.txt", "a+")
         BaseRequestHandler.__init__(self, *args, **kwargs)
 
     def handle(self):
