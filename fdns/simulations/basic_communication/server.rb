@@ -1,11 +1,9 @@
 defApplication('server', 'server') do |a|
 
   a.path = "/home/fernandocezar/Orbit/fdns/simulations/basic_communication/server.py"
+  a.appPackage = "/home/fernandocezar/Orbit/fdns/simulations/basic_communication.tar"
   a.version(1, 1, 3)
   a.shortDescription = "Programmable traffic generator v2"
-  a.description = <<TEXT
-This is a test server for basic communication. It echoes what it receives.
-TEXT
 
   # Define the properties that can be configured for this application
   # 

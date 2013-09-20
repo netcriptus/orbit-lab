@@ -1,12 +1,9 @@
 defApplication('client', 'client') do |a|
 
   a.path = "/home/fernandocezar/Orbit/fdns/simulations/basic_communication/client.py"
+  a.appPackage = "/home/fernandocezar/Orbit/fdns/simulations/basic_communication.tar"
   a.version(1, 1, 3)
   a.shortDescription = "Programmable traffic generator v2"
-  a.description = <<TEXT
-  This is a dummy traffic generator. It generates the same message 20 times
-TEXT
-
 
   # Define the properties that can be configured for this application
   # 
