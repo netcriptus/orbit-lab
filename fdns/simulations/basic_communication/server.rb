@@ -1,7 +1,7 @@
 defApplication('server', 'server') do |a|
 
   a.path = "/home/fernandocezar/Orbit/fdns/simulations/basic_communication/server.py"
-  a.appPackage = "https://github.com/netcriptus/orbit-lab/blob/master/fdns/simulations/basic_communication.tar?raw=true"
+  a.appPackage = "https://github.com/netcriptus/orbit-lab/archive/master.zip"
   a.version(1, 1, 3)
   a.shortDescription = "Programmable traffic generator v2"
 
