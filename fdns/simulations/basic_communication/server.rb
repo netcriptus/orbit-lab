@@ -1,6 +1,6 @@
 defApplication('server', 'server') do |a|
 
-  a.path = "/home/fernandocezar/basic_communication/server.py"
+  a.path = "/basic_communication/server.py"
   a.appPackage = "http://www.inf.ufpr.br/albini/basic_communication.tar"
   a.version(1, 1, 3)
   a.shortDescription = "Programmable traffic generator v2"
